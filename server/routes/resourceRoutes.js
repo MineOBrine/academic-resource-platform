@@ -25,7 +25,7 @@ router.get("/search", searchResources);
 router.get("/my", authMiddleware, getMyResources);
 
 
-// CREATE resource (with file upload)
+// CREATE resource
 router.post(
   "/",
   authMiddleware,
@@ -34,12 +34,11 @@ router.post(
 );
 
 
-// DELETE resource
+// DELETE resource (owner OR admin)
 router.delete(
   "/:id",
   authMiddleware,
   deleteResource
 );
-
 
 module.exports = router;

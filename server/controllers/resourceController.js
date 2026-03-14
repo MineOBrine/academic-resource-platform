@@ -93,26 +93,44 @@ exports.searchResources = async (req, res) => {
 
 // DELETE RESOURCE
 exports.deleteResource = async (req, res) => {
-    try {
+  try {
 
-        const resource = await Resource.findById(req.params.id);
+    const resource = await Resource.findById(req.params.id);
 
-        if (!resource) {
-            return res.status(404).json({ message: "Resource not found" });
-        }
-
-        // Only uploader can delete
-        if (resource.uploadedBy.toString() !== req.user.id) {
-            return res.status(403).json({ message: "Not authorized to delete this resource" });
-        }
-
-        await resource.deleteOne();
-
-        res.json({
-            message: "Resource deleted successfully"
-        });
-
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!resource) {
+      return res.status(404).json({
+        message: "Resource not found"
+      });
     }
+
+    // Admin can delete anything
+    if (req.user.role === "admin") {
+
+      await resource.deleteOne();
+
+      return res.json({
+        message: "Resource deleted by admin"
+      });
+    }
+
+    // User can delete their own resource
+    if (resource.uploadedBy.toString() === req.user.id) {
+
+      await resource.deleteOne();
+
+      return res.json({
+        message: "Resource deleted successfully"
+      });
+    }
+
+    // Otherwise deny
+    return res.status(403).json({
+      message: "You are not authorized to delete this resource"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
 };
