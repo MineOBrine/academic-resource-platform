@@ -11,12 +11,10 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
         params: async (req, file) => {
-            const ext = file.originalname.split('.').pop();
             return {
                 folder: "learnhive",
-                resource_type: "auto",
-                format: ext,
-                public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_").replace(`.${ext}`, ''),
+                resource_type: "image",
+                public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_"),
             };
         },
 });
