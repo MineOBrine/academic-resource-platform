@@ -10,10 +10,11 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: async (req, file) => {
+        params: async (req, file) => {
+        const isPDF = file.mimetype === 'application/pdf';
         return {
             folder: "learnhive",
-            resource_type: "auto",
+            resource_type: isPDF ? "raw" : "auto",
             public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_"),
         };
     },
