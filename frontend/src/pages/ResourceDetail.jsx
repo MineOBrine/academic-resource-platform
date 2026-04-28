@@ -29,16 +29,10 @@ export default function ResourceDetail() {
   }, [id])
 
   const handleDownload = () => {
-    const url = resourceService.getFileUrl(resource.fileUrl)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = resource.title || 'download'
-    a.target = '_blank'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    toast.success('Download started!')
-}
+      const url = resourceService.getFileUrl(resource.fileUrl)
+      window.open(url, '_blank')
+      toast.success('Download started!')
+  }
 
   const handleDelete = async () => {
     if (!window.confirm('Delete this resource?')) return
