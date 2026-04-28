@@ -149,7 +149,7 @@ export default function ResourceDetail() {
           <div className="detail-actions-card">
             <h3>Actions</h3>
             <button className="btn-primary detail-download-btn" onClick={handleDownload}>
-              <FaExternalLinkAlt /> Open Resource
+              <FaDownload /> Download Resource
             </button>
             {canDelete && (
               <button className="detail-delete-btn" onClick={handleDelete}>
