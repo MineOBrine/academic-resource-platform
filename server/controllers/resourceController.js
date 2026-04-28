@@ -7,7 +7,7 @@ exports.createResource = async (req, res) => {
 
         const { title, description, subject } = req.body;
 
-        const fileUrl = req.file ? req.file.filename : null;
+        const fileUrl = req.file ? req.file.path : null;
 
         const resource = await Resource.create({
             title,
