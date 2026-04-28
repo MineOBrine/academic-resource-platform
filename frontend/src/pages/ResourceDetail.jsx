@@ -29,9 +29,13 @@ export default function ResourceDetail() {
   }, [id])
 
   const handleDownload = () => {
-    const url = resourceService.getFileUrl(resource.fileUrl)
-    window.open(url, '_blank')
-    toast.success('Download started!')
+      let url = resourceService.getFileUrl(resource.fileUrl)
+      // Force download for Cloudinary raw files
+      if (url.includes('/raw/upload/')) {
+          url = url.replace('/upload/', '/upload/fl_attachment/')
+      }
+      window.open(url, '_blank')
+      toast.success('Download started!')
   }
 
   const handleDelete = async () => {
