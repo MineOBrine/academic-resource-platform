@@ -34,5 +34,5 @@ export const resourceService = {
   },
 
   // Build the full download URL from stored filename
-  getFileUrl: (filename) => `${BASE_URL}/uploads/${filename}`
+  getFileUrl: (filename) => filename
 }
