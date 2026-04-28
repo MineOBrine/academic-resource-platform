@@ -29,11 +29,14 @@ export default function ResourceDetail() {
   }, [id])
 
   const handleDownload = () => {
-    let url = resourceService.getFileUrl(resource.fileUrl)
-    if (url.includes('/raw/upload/')) {
-        url = url.replace('/raw/upload/', '/raw/upload/fl_attachment/')
-    }
-    window.open(url, '_blank')
+    const url = resourceService.getFileUrl(resource.fileUrl)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = resource.title || 'download'
+    a.target = '_blank'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
     toast.success('Download started!')
 }
 
