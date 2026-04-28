@@ -28,10 +28,23 @@ export default function ResourceDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
-  const handleDownload = () => {
-      const url = resourceService.getFileUrl(resource.fileUrl)
-      window.open(url, '_blank')
-      toast.success('Download started!')
+  const handleDownload = async () => {
+      try {
+          const url = resourceService.getFileUrl(resource.fileUrl)
+          const response = await fetch(url)
+          const blob = await response.blob()
+          const blobUrl = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = blobUrl
+          a.download = resource.title + '.pdf'
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          window.URL.revokeObjectURL(blobUrl)
+          toast.success('Download started!')
+      } catch {
+          toast.error('Download failed.')
+      }
   }
 
   const handleDelete = async () => {

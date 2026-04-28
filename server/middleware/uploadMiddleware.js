@@ -14,7 +14,7 @@ const storage = new CloudinaryStorage({
             return {
                 folder: "learnhive",
                 resource_type: "image",
-                public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_"),
+                public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_").replace(/\.[^/.]+$/, ""),
             };
         },
 });
