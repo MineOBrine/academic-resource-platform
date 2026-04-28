@@ -11,13 +11,14 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
         params: async (req, file) => {
-        const isPDF = file.mimetype === 'application/pdf';
-        return {
-            folder: "learnhive",
-            resource_type: isPDF ? "raw" : "auto",
-            public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_"),
-        };
-    },
+            const ext = file.originalname.split('.').pop();
+            return {
+                folder: "learnhive",
+                resource_type: "auto",
+                format: ext,
+                public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_").replace(`.${ext}`, ''),
+            };
+        },
 });
 
 const upload = multer({ storage });
