@@ -4,6 +4,7 @@ const Resource = require("../models/Resource");
 // CREATE RESOURCE
 exports.createResource = async (req, res) => {
     try {
+        console.log("req.file:", req.file);
 
         const { title, description, subject } = req.body;
 
