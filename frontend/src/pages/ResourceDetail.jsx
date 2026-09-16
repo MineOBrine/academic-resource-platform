@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { FaDownload, FaExternalLinkAlt, FaTrash, FaArrowLeft, FaUser, FaCalendar, FaFileAlt, FaTag } from 'react-icons/fa'
+import { FaDownload, FaTrash, FaArrowLeft, FaUser, FaCalendar, FaFileAlt, FaTag, FaEye } from 'react-icons/fa'
 import Layout from '../components/Layout'
 import { toast } from '../utils/toast'
 import { useAuth } from '../contexts/AuthContext'
 import { resourceService } from '../services/resourceService'
 import Tag from '../components/Tag'
+import DocumentViewer from '../components/DocumentViewer'
 import '../styles/pages/resourceDetail.css'
 
 export default function ResourceDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, isAuthenticated } = useAuth()
 
   const [resource, setResource] = useState(null)
   const [loading, setLoading]   = useState(true)
   const [notFound, setNotFound] = useState(false)
+
+  const [viewerOpen, setViewerOpen] = useState(false)
+  const [viewUrl, setViewUrl]       = useState(null)
 
   useEffect(() => {
     resourceService.getAll()
@@ -28,23 +32,51 @@ export default function ResourceDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
+  // Both View and Download go through the protected /:id/view endpoint —
+  // resource.fileUrl from the public getAll() call is no longer present
+  // for anonymous users, so this is the only reliable source for the URL.
+  const requireFileUrl = async () => {
+    const data = await resourceService.view(resource._id)
+    return data.fileUrl
+  }
+
+  const handleView = async () => {
+    if (!isAuthenticated) {
+      toast.info('Please log in to view this document.')
+      navigate('/login')
+      return
+    }
+    try {
+      const fileUrl = await requireFileUrl()
+      setViewUrl(fileUrl)
+      setViewerOpen(true)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Unable to open document.')
+    }
+  }
+
   const handleDownload = async () => {
-      try {
-          const url = resourceService.getFileUrl(resource.fileUrl)
-          const response = await fetch(url)
-          const blob = await response.blob()
-          const blobUrl = window.URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = blobUrl
-          a.download = resource.title + '.pdf'
-          document.body.appendChild(a)
-          a.click()
-          a.remove()
-          window.URL.revokeObjectURL(blobUrl)
-          toast.success('Download started!')
-      } catch {
-          toast.error('Download failed.')
-      }
+    if (!isAuthenticated) {
+      toast.info('Please log in to download this document.')
+      navigate('/login')
+      return
+    }
+    try {
+      const fileUrl = await requireFileUrl()
+      const response = await fetch(fileUrl)
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = resource.title + '.pdf'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(blobUrl)
+      toast.success('Download started!')
+    } catch {
+      toast.error('Download failed.')
+    }
   }
 
   const handleDelete = async () => {
@@ -148,9 +180,15 @@ export default function ResourceDetail() {
         <div className="detail-sidebar">
           <div className="detail-actions-card">
             <h3>Actions</h3>
+
+            <button className="btn-primary detail-download-btn" onClick={handleView}>
+              <FaEye /> View Document
+            </button>
+
             <button className="btn-primary detail-download-btn" onClick={handleDownload}>
               <FaDownload /> Download Resource
             </button>
+
             {canDelete && (
               <button className="detail-delete-btn" onClick={handleDelete}>
                 <FaTrash /> Delete Resource
@@ -164,6 +202,14 @@ export default function ResourceDetail() {
         </div>
 
       </div>
+
+      {viewerOpen && (
+        <DocumentViewer
+          fileUrl={viewUrl}
+          title={resource.title}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
     </Layout>
   )
 }

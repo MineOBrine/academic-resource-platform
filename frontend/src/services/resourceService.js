@@ -19,6 +19,14 @@ export const resourceService = {
     return data
   },
 
+  // GET /api/resources/:id/view  (auth required)
+  // Returns { fileUrl, title } — the only way to get a resource's fileUrl now,
+  // since the public list/search responses omit it for anonymous requests.
+  view: async (id) => {
+    const { data } = await api.get(`/api/resources/${id}/view`)
+    return data
+  },
+
   // POST /api/resources  (multipart form, auth required)
   create: async (formData) => {
     const { data } = await api.post('/api/resources', formData, {

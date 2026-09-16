@@ -1,0 +1,42 @@
+.viewer-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(28, 46, 36, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+
+.viewer-modal {
+  width: 100%; max-width: 900px; height: 85vh;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  animation: fadeUp .3s ease both;
+}
+
+.viewer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px; color: var(--text-pri);
+}
+
+.viewer-actions { display: flex; align-items: center; gap: 8px; }
+
+.viewer-icon-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-sec);
+  cursor: pointer; transition: .2s;
+}
+.viewer-icon-btn:hover { color: var(--primary); border-color: var(--primary); }
+
+.viewer-frame {
+  flex: 1; width: 100%; border: none; background: #fff;
+}

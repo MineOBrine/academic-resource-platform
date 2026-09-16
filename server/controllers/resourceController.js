@@ -1,6 +1,21 @@
 const Resource = require("../models/Resource");
 
 
+// Strip fileUrl from a resource doc when there's no authenticated user.
+// This is what makes the "logged-in users only" rule actually hold —
+// otherwise fileUrl would sit in the public /api/resources response
+// and be visible to anyone in the network tab, regardless of the
+// button-level auth check on the frontend.
+const sanitizeForViewer = (resource, isAuthenticated) => {
+    const obj = resource.toObject ? resource.toObject() : resource;
+    if (!isAuthenticated) {
+        const { fileUrl, ...rest } = obj;
+        return rest;
+    }
+    return obj;
+};
+
+
 // CREATE RESOURCE
 exports.createResource = async (req, res) => {
     try {
@@ -31,6 +46,7 @@ exports.createResource = async (req, res) => {
 
 
 // GET ALL RESOURCES
+// Public route, but fileUrl is only included when the requester is logged in.
 exports.getResources = async (req, res) => {
     try {
 
@@ -38,9 +54,12 @@ exports.getResources = async (req, res) => {
             .populate("uploadedBy", "name email")
             .sort({ createdAt: -1 });
 
+        const isAuthenticated = !!req.user;
+        const sanitized = resources.map(r => sanitizeForViewer(r, isAuthenticated));
+
         res.json({
-            count: resources.length,
-            resources
+            count: sanitized.length,
+            resources: sanitized
         });
 
     } catch (error) {
@@ -51,6 +70,7 @@ exports.getResources = async (req, res) => {
 
 
 // GET RESOURCES UPLOADED BY CURRENT USER
+// Already behind authMiddleware, and these are the user's own uploads — keep fileUrl.
 exports.getMyResources = async (req, res) => {
     try {
 
@@ -71,6 +91,7 @@ exports.getMyResources = async (req, res) => {
 
 
 // SEARCH RESOURCES
+// Same rule as getResources — fileUrl only for authenticated requests.
 exports.searchResources = async (req, res) => {
     try {
 
@@ -80,9 +101,36 @@ exports.searchResources = async (req, res) => {
             title: { $regex: keyword, $options: "i" }
         }).populate("uploadedBy", "name email");
 
+        const isAuthenticated = !!req.user;
+        const sanitized = resources.map(r => sanitizeForViewer(r, isAuthenticated));
+
         res.json({
-            count: resources.length,
-            resources
+            count: sanitized.length,
+            resources: sanitized
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+
+// VIEW RESOURCE (auth required) — used by the in-app document viewer AND
+// the download button, so both actions only ever get fileUrl through a
+// route that's actually gated by authMiddleware.
+exports.viewResource = async (req, res) => {
+    try {
+
+        const resource = await Resource.findById(req.params.id);
+
+        if (!resource) {
+            return res.status(404).json({ message: "Resource not found" });
+        }
+
+        res.json({
+            fileUrl: resource.fileUrl,
+            title: resource.title
         });
 
     } catch (error) {
