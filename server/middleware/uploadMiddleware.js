@@ -13,8 +13,13 @@ const storage = new CloudinaryStorage({
         params: async (req, file) => {
             return {
                 folder: "learnhive",
-                resource_type: "image",
+                resource_type: "auto",   // was "image" — auto lets Cloudinary store
+                                          // PDFs/DOCX as the correct type instead of
+                                          // trying to treat them as an image, which
+                                          // was breaking Google Docs Viewer previews
                 public_id: Date.now() + "-" + file.originalname.replace(/\s+/g, "_").replace(/\.[^/.]+$/, ""),
+                use_filename: true,
+                unique_filename: false,
             };
         },
 });
